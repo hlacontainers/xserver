@@ -1,0 +1,44 @@
+FROM ubuntu:14.04
+MAINTAINER Tom van den Berg <tom.vandenberg@tno.nl>
+
+# Get packages
+RUN apt-get update && apt-get install -y \
+	fluxbox \
+	x11vnc \
+	xvfb \
+	supervisor \
+	socat
+
+# Set environment variables to default values
+ENV DISPLAY=:0 \
+	PASSWORD="" \
+	DISPLAY_WIDTH=1024 \
+	DISPLAY_HEIGHT=768 \
+	HOME=/root
+
+WORKDIR $HOME
+
+# Install noVNC	
+COPY ./xserver/novnc/noVNC-0.6.1.tar.gz $HOME
+COPY ./xserver/novnc/websockify-0.8.0.tar.gz $HOME
+RUN tar -xzf $HOME/noVNC-0.6.1.tar.gz \
+	&& tar -xzf $HOME/websockify-0.8.0.tar.gz \
+	&& ln -s $HOME/noVNC-0.6.1 $HOME/noVNC \
+	&& ln -s $HOME/websockify-0.8.0 $HOME/noVNC/utils/websockify \
+	&& rm $HOME/noVNC-0.6.1.tar.gz \
+	&& rm $HOME/websockify-0.8.0.tar.gz
+
+# Prepare supervisor log
+RUN mkdir -p /var/log/supervisor
+
+# Install configuration for supervisor
+COPY ./xserver/supervisor-socat $HOME
+
+# Install configuration for fluxbox
+COPY ./xserver/fluxbox $HOME/.fluxbox/
+
+# Expose VNC, SUPERVISOR, and Websocker port 
+EXPOSE 5900 9001 8080
+
+# Set entrypoint
+CMD ["/usr/bin/supervisord", "-c", "supervisord.conf"]

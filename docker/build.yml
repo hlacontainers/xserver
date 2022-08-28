@@ -1,0 +1,20 @@
+version: '2'
+
+services:
+ xserver-xhost:
+  build:
+   context: context
+   dockerfile: Dockerfile
+  image: hlacontainers/xserver
+
+ xserver-xdummy:
+  build:
+   context: context
+   dockerfile: Dockerfile-xdummy
+  image: hlacontainers/xserver:xdummy
+
+ xserver-socat:
+  build:
+   context: context
+   dockerfile: Dockerfile-socat
+  image: hlacontainers/xserver:socat
